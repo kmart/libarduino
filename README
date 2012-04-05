@@ -1,122 +1,65 @@
-kmm@graabein:~/Utvikling/arduino/oldpong$ make
-# Here is the "preprocessing".
-# It creates a .cpp file based with the same name as the .pde file.
-# On top of the new .cpp file comes the WProgram.h header.
-# At the end there is a generic main() function attached.
-# Then the .cpp file will be compiled. Errors during compile will
-# refer to this new, automatically generated, file. 
-# Not the original .pde file you actually edit...
-test -d applet || mkdir applet
-echo '#include "WProgram.h"' > applet/pong.cpp
-cat pong.pde >> applet/pong.cpp
-cat /opt/arduino-0012/hardware/cores/arduino/main.cxx >> applet/pong.cpp
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/pins_arduino.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring_analog.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring_digital.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring_pulse.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring_serial.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/wiring_shift.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/WInterrupts.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/HardwareSerial.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0012/hardware/cores/arduino/WMath.o
-/usr/bin/avr-gcc -mmcu=atmega168 -I. -gstabs -DF_CPU=16000000 -I/opt/arduino-0012/hardware/cores/arduino -Os -Wall    -o applet/pong.elf applet/pong.cpp -L. applet/core.a -lm
-/usr/bin/avr-objcopy -O ihex -R .eeprom applet/pong.elf applet/pong.hex
+Arduino the Unix way
+--------------------
+
+Compiles and installs the Arduino source files as a Unix library archive file,
+together with the corresponding header files.
+
+In addition the rules for building an Arduino application is offloaded into an
+external makefile (arduino.mk). The 'Makefile' needed can thus be reduced to a
+few lines. An example:
+
+    TARGET = blink
+    SRCS   = blink.pde
+
+    include /usr/local/lib/arduino.mk
+
+Prerequisites:
+
+    # apt-get install gcc-avr
+    # apt-get install avrdude
+
+  (Uses the standard 'avrdude' rather that the version that comes with Arduino.)
+
+Build and install:
+
+    $ wget http://arduino.cc/en/Main/Software/arduino-0022.tgz
+    $ tar zxf arduino-0022.tgz
+    $ cp -d ./arduino-0022/hardware/arduino/cores/arduino/* ./src/
+
+  Optional:
+    $ cp ./arduino-0022/libraries/LiquidCrystal/LiquidCrystal.* ./src/
+    $ cp ./arduino-0022/libraries/Matrix/Matrix.* ./src/
+      ...
+
+    $ ./build-script
+
+  The 'build-script' script builds and installs libraries for a fixed set of
+  'MCU' and 'F_CPU' combinations. Change as neccessary. (It will also install
+  the header and the 'arduino.mk' files.)
+
+  Default install directory is '/usr/local/'. Change the 'PREFIX' variable at
+  the top of 'Makefile' if needed.
+
+Usage:
+
+  See in the '/.example/' directory for an example 'Makefile'.
+
+  Important! Make sure that the line
+
+      #include <WProgram.h>
+
+  is added to the top of your '*.pde' files. This is the only change that is
+  needed. (Does not causes incompatibility issues.)
+
+  Default 'MCU', 'F_CPU' and 'PORT' variables are:
+
+      MCU   = atmega328p
+      F_CPU = 16000000
+
+      PORT  = /dev/ttyUSB0
+
+  If other values are needed, override as needed in your 'Makefile' or give them
+  as parameter to the 'make' command.
 
 
-   text	   data	    bss	    dec	    hex	filename
-      0	   4178	      0	   4178	   1052	applet/pong.hex
-
-kmm@graabein:~/Utvikling/arduino/oldpong$ 
-
-
-
-
-
-
-kmm@graabein:~/Utvikling/arduino/pong$ make
-# Here is the "preprocessing".
-# It creates a .cpp file based with the same name as the .pde file.
-# On top of the new .cpp file comes the WProgram.h header.
-# and prototypes for setup() and Loop()
-# Then the .cpp file will be compiled. Errors during compile will
-# refer to this new, automatically generated, file.
-# Not the original .pde file you actually edit...
-test -d applet || mkdir applet
-echo '#include "WProgram.h"' > applet/pong.cpp
-echo 'void setup();' >> applet/pong.cpp
-echo 'void loop();' >> applet/pong.cpp
-cat pong.pde >> applet/pong.cpp
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p applet/pong.cpp -o applet/pong.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_pulse.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_pulse.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_analog.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_analog.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/pins_arduino.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/pins_arduino.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/wiring.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/wiring.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_digital.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_digital.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/WInterrupts.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/WInterrupts.o
-/usr/bin/avr-gcc -c -g -Os -w       -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino   -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_shift.c -o /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_shift.o
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/Tone.cpp -o /opt/arduino-0021/hardware/arduino/cores/arduino/Tone.o
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/main.cpp -o /opt/arduino-0021/hardware/arduino/cores/arduino/main.o
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/WMath.cpp -o /opt/arduino-0021/hardware/arduino/cores/arduino/WMath.o
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/Print.cpp -o /opt/arduino-0021/hardware/arduino/cores/arduino/Print.o
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=18 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p /opt/arduino-0021/hardware/arduino/cores/arduino/HardwareSerial.cpp -o /opt/arduino-0021/hardware/arduino/cores/arduino/HardwareSerial.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_pulse.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_analog.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/pins_arduino.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_digital.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/WInterrupts.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_shift.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/Tone.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/main.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/WMath.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/Print.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/HardwareSerial.o
-/usr/bin/avr-gcc -Os -lm -Wl,--gc-sections -mmcu=atmega328p -o applet/pong.elf applet/pong.o applet/core.a
-/usr/bin/avr-objcopy -O ihex -R .eeprom applet/pong.elf applet/pong.hex
-
-
-   text	   data	    bss	    dec	    hex	filename
-      0	   3514	      0	   3514	    dba	applet/pong.hex
-
-kmm@graabein:~/Utvikling/arduino/pong$
-
-
-
-
-
-kmm@graabein:~/Utvikling/arduino/pong$ make
-# Here is the "preprocessing".
-# It creates a .cpp file based with the same name as the .pde file.
-# On top of the new .cpp file comes the WProgram.h header.
-# and prototypes for setup() and Loop()
-# Then the .cpp file will be compiled. Errors during compile will
-# refer to this new, automatically generated, file.
-# Not the original .pde file you actually edit...
-test -d applet || mkdir applet
-echo '#include "WProgram.h"' > applet/pong.cpp
-echo 'void setup();' >> applet/pong.cpp
-echo 'void loop();' >> applet/pong.cpp
-cat pong.pde >> applet/pong.cpp
-/usr/bin/avr-g++ -c -g -Os -w       -fno-exceptions -ffunction-sections -fdata-sections -DF_CPU=16000000L -DARDUINO=21 -I/opt/arduino-0021/hardware/arduino/cores/arduino -mmcu=atmega328p applet/pong.cpp -o applet/pong.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_pulse.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_analog.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/pins_arduino.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_digital.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/WInterrupts.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/wiring_shift.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/Tone.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/main.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/WMath.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/Print.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/HardwareSerial.o
-/usr/bin/avr-ar rcs applet/core.a /opt/arduino-0021/hardware/arduino/cores/arduino/Print.o
-/usr/bin/avr-gcc -Os -lm -Wl,--gc-sections -mmcu=atmega328p -o applet/pong.elf applet/pong.o applet/core.a
-/usr/bin/avr-objcopy -O ihex -R .eeprom applet/pong.elf applet/pong.hex
-
-
-   text	   data	    bss	    dec	    hex	filename
-      0	   3514	      0	   3514	    dba	applet/pong.hex
-
-kmm@graabein:~/Utvikling/arduino/pong$ 
+2011-02-27  <kmyksvo(at)online.no>
