@@ -1,0 +1,4 @@
+* copy examples to /usr/local/share somewhere
+* copy reference web pages to /usr/local/share somewhere
+* convert reference web pages to Unix man-pages
+* versioning
