@@ -1,4 +1,4 @@
-TARGET = pong
-SRCS   = pong.pde
+TARGET = blink
+SRCS   = blink.pde
 
 include /usr/local/lib/arduino.mk

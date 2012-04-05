@@ -1,0 +1,13 @@
+#! /bin/sh
+
+# see 'board.txt' in Arduino dist for combinations
+make clean install MCU=atmega328p F_CPU=16000000
+make clean install MCU=atmega328p F_CPU=8000000
+make clean install MCU=atmega168  F_CPU=16000000
+make clean install MCU=atmega168  F_CPU=8000000
+make clean install MCU=atmega2560 F_CPU=16000000
+make clean install MCU=atmega1280 F_CPU=16000000
+make clean install MCU=atmega8    F_CPU=16000000
+
+make install_headers
+make install_mk
