@@ -1,4 +1,4 @@
 TARGET = blink
-SRCS   = blink.pde
+SRCS   = blink.ino
 
-include /usr/local/lib/arduino.mk
+include /usr/local/lib/arduino/inc.mk
