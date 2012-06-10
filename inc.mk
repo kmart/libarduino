@@ -7,6 +7,8 @@ MCU     = atmega328p
 F_CPU   = 16000000
 CORE    = arduino
 VARIANT = standard
+USB_VID =
+USB_PID =
 
 VERSION = 100
 
@@ -38,9 +40,11 @@ DEP_LIB = $(foreach var,$(DEPS),-l$(var))
 
 CFLAGS   = -c -g -Os -w -ffunction-sections -fdata-sections \
     -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)     \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
     -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 CXXFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
     -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)     \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
     -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 
 LDFLAGS  = -Os -Wl,--gc-sections -mmcu=$(MCU)

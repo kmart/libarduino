@@ -2,13 +2,15 @@
 
 PREFIX  = /usr/local
 
-ROOT    = ./arduino-1.0
+ROOT    = ./arduino-1.0.1
 SRC     = $(ROOT)/hardware/arduino
 
 MCU     = atmega328p
 F_CPU   = 16000000L
 CORE    = arduino
 VARIANT = standard
+USB_VID =
+USB_PID =
 
 VERSION = 100
 
@@ -32,9 +34,11 @@ OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(CORE).a
 
 CFLAGS   = -g -Os -w -ffunction-sections -fdata-sections \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -I$(SRC)/cores/$(CORE) -I$(SRC)/variants/$(VARIANT)
+    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -I$(SRC)/cores/$(CORE) \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) -I$(SRC)/variants/$(VARIANT)
 CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU) -I$(SRC)/cores/$(CORE) -I$(SRC)/variants/$(VARIANT)
+    -mmcu=$(MCU) -DF_CPU=$(F_CPU) -I$(SRC)/cores/$(CORE) \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) -I$(SRC)/variants/$(VARIANT)
 
 all: $(LIB)
 

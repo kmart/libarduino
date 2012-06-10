@@ -5,13 +5,15 @@ PREFIX  = /usr/local
 NAME    = SPI
 DEPS    =
 
-ROOT    = ./arduino-1.0
+ROOT    = ./arduino-1.0.1
 SRC     = $(ROOT)/libraries/$(NAME)
 
 MCU     = atmega328p
 F_CPU   = 16000000L
 CORE    = arduino
 VARIANT = standard
+USB_VID =
+USB_PID =
 
 VERSION = 100
 
@@ -39,10 +41,12 @@ LIB  = lib$(NAME).a
 
 CFLAGS   = -g -Os -w -ffunction-sections -fdata-sections \
     -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)  \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
     -I$(SRC) -I$(SRC)/utility -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) \
     $(DEP_H)
 CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
     -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)  \
+    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
     -I$(SRC) -I$(SRC)/utility -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) \
     $(DEP_H)
 

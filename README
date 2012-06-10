@@ -30,8 +30,8 @@ Prerequisites:
 
 Build and install:
 
-    $ wget http://arduino.googlecode.com/files/arduino-1.0-linux.tgz
-    $ tar zxf arduino-1.0-linux.tgz
+    $ wget http://arduino.googlecode.com/files/arduino-1.0.1-linux.tgz
+    $ tar zxf arduino-1.0.1-linux.tgz
     $ make -f core.mk install
     $ make -f core.mk install_mk
     $ make -f library.mk install NAME=EEPROM
@@ -59,6 +59,10 @@ The above lines builds for the standard "Uno" board, e.g. with the parameters:
 Builds for boards can be done by overriding the parameters with appropiate
 values. (See the "board.txt" file in the Arduino distribution for correct
 combinations.)
+
+(With Arduino ver. 1.0.1 the paramters "USB_VID" and "USB_PID" are introduced,
+for use with the atmega32u4 processor.  Currently only the core build for the
+"Leonardo" board uses these two variables.)
 
 If an installation for all board types is desired, this can be done by running
 the "build.sh" script:
