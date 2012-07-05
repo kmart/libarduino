@@ -1,25 +1,26 @@
 # makefile for Arduino core
 
-PREFIX  = /usr/local
+PREFIX := /usr/local
 
-ROOT    = ./arduino-1.0.1
-SRC     = $(ROOT)/hardware/arduino
+ROOT   := ./arduino-1.0.1
+SRC    := $(ROOT)/hardware/arduino
 
-MCU     = atmega328p
-F_CPU   = 16000000L
-CORE    = arduino
-VARIANT = standard
-USB_VID =
-USB_PID =
+# change this if you wish to have an another board as the default board
+BOARD   := atmega328
 
-VERSION = 100
+VERSION := 101
 
-# the lines below will most likely not require any changes
+## the lines below will most likely not require any changes
 
-CC  = /usr/bin/avr-gcc
-CXX = /usr/bin/avr-g++
-AR  = /usr/bin/avr-ar
-CP  = /usr/bin/install
+# might be unset in older board definitions
+VARIANT := standard
+
+include ./boards/$(BOARD).inc
+
+CC  := /usr/bin/avr-gcc
+CXX := /usr/bin/avr-g++
+AR  := /usr/bin/avr-ar
+CP  := /usr/bin/install
 
 MHZ = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
@@ -33,12 +34,15 @@ SRC_CPP = $(wildcard $(SRC)/cores/$(CORE)/*.cpp)
 OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(CORE).a
 
-CFLAGS   = -g -Os -w -ffunction-sections -fdata-sections \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -I$(SRC)/cores/$(CORE) \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) -I$(SRC)/variants/$(VARIANT)
-CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU) -I$(SRC)/cores/$(CORE) \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) -I$(SRC)/variants/$(VARIANT)
+DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)
+ifdef VID
+  DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(SRC)/cores/$(CORE) -I$(SRC)/variants/$(VARIANT)
+CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(SRC)/cores/$(CORE) -I$(SRC)/variants/$(VARIANT)
 
 all: $(LIB)
 
@@ -50,6 +54,7 @@ install: $(LIB)
 	$(CP) -d $(INCDIR)
 	$(CP) -D -C -m 644 $(SRC_H) $(INCDIR)
 	$(CP) -D -C -m 644 $(SRC)/variants/$(VARIANT)/pins_$(CORE).h $(INCDIR)/variants/$(VARIANT)/pins_$(CORE).h
+	$(CP) -D -C -m 644 ./boards/$(BOARD).inc $(PREFIX)/lib/arduino/boards/$(BOARD).inc
 
 install_wp: WProgram.h
 	$(CP) -D -C -m 644 $? $(PREFIX)/include/arduino

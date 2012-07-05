@@ -2,3 +2,4 @@
 * copy reference web pages to /usr/local/share somewhere
 * convert reference web pages to Unix man-pages
 * versioning
+* handle repeated recompilation during installation
