@@ -4,9 +4,9 @@ Arduino the Unix way
 Compiles and installs the Arduino source files and standard libraries as Unix
 library archive files, together with header files.
 
-In addition the rules for building an Arduino application is offloaded into an
-external makefile (inc.mk). The 'Makefile' needed in a project can thus be
-reduced to a few lines. An example:
+In addition the rules for building an Arduino application has been offloaded
+into an external makefile (inc.mk). The "Makefile" needed for an Arduino project
+can thus be reduced to a few lines. An example:
 
     TARGET = blink
     SRCS   = blink.ino
@@ -32,70 +32,52 @@ Build and install:
 
     $ wget http://arduino.googlecode.com/files/arduino-1.0.1-linux.tgz
     $ tar zxf arduino-1.0.1-linux.tgz
-    $ make -f core.mk install
-    $ make -f core.mk install_mk
-    $ make -f library.mk install NAME=EEPROM
-    $ make -f library.mk install NAME=SPI
-    $ make -f library.mk install NAME=Ethernet DEPS=SPI
-    $ make -f library.mk install NAME=Firmata
-    $ make -f library.mk install NAME=LiquidCrystal
-    $ make -f library.mk install NAME=SD
-    $ make -f library.mk install NAME=Servo
-    $ make -f library.mk install NAME=SoftwareSerial
-    $ make -f library.mk install NAME=Stepper
-    $ make -f library.mk install NAME=Wire
-
-Installs the Arduino "core", the "inc.mk" makefile and the standard libraries.
-(Note that the "Ethernet" library depends on that the "SPI" library has already
-been installed.)
-
-The above lines builds for the standard "Uno" board, e.g. with the parameters:
-
-   MCU     = atmega328p
-   F_CPU   = 16000000L
-   CORE    = arduino
-   VARIANT = standard
-
-Builds for boards can be done by overriding the parameters with appropiate
-values. (See the "board.txt" file in the Arduino distribution for correct
-combinations.)
-
-(With Arduino ver. 1.0.1 the paramters "USB_VID" and "USB_PID" are introduced,
-for use with the atmega32u4 processor.  Currently only the core build for the
-"Leonardo" board uses these two variables.)
-
-If an installation for all board types is desired, this can be done by running
-the "build.sh" script:
-
+    $ ./conv.sh ./arduino-1.0.1/hardware/arduino/boards.txt
     $ ./build.sh
 
-which will install the Arduino core and standard libraries for all boards.
+Will install the Arduino "core", the "inc.mk" makefile, the converted 'board'
+configuration files and the standard libraries, for all the boards defined in
+the "boards.txt" file.
 
-Usage:
+Configurations for additional boards can be added by running the "conv.sh"
+script with the "boards.txt" file for the additional boards as parameter. For
+example for the Sanguino board (http://sanguino.cc/):
 
-  See in the './example' directory for an example 'Makefile'.
+    $ wget http://sanguino.googlecode.com/files/Sanguino-0023r4.zip
+    $ unzip Sanguino-0023r4.zip
+    $ ./conv.sh Sanguino/boards.txt
 
-  Important! Make sure that the line
+(Remember to run the "build.sh" script to actually compile libraries for the
+added boards.)
 
-      #include <Arduino.h>
+The default installation directory is "/usr/local/include/arduino" for header
+files and "/usr/local/lib/arduino' for libraries and support files.
 
-  is added to the top of your '*.ino' (or .pde) files. This is the only change
-  that is needed to the source files.
+By default an Arduino project will be built for the "atmega328" (Duemilanove
+and similar) board, which has the following parameters set:
 
-  Default board paramters are for the "Uno" board (see above). If the build is
-  for a different board, then the parameters:
+    PROTOCOL = arduino
+    MAXIMUM_SIZE = 30720
+    SPEED = 57600
+    MCU = atmega328p
+    F_CPU = 16000000L
+    CORE = arduino
+    VARIANT = standard
 
-      MCU, F_CPU, CORE and VARIANT
+If the build should be for a different board, for example for the "Leonardo" board, add
+the "BOARD=leonardo" as parameter to the "make" command. Example:
 
-  must be overridden with correct values in the projects Makefile. (See the
-  "board.txt" file in the Arduino distribution for correct value combinations.)
+    $ make BOARD=leonardo
 
-  The "avrdude" upload protocol, speed and port are by default set to:
+Similarily builds can be done for other boards. For an overview over boards
+supported, look in the "/usr/local/lib/arduino/boards" directory. It contains
+one configuration file for each board supported.
 
-      PROGRAMMER  = arduino
-      UPLOAD_RATE = 115200
-      PORT        = /dev/ttyUSB0
+Default board can be set by updating the line
 
-  Override as appropriate.
+    BOARD  := atmega328
 
-2012-01-01  <kmyksvo(at)online.no>
+at the top of the the "/usr/local/lib/arduino/inc.mk" file.
+
+
+2012-07-05  <kmyksvo(at)online.no>

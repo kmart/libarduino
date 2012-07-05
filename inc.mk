@@ -1,29 +1,29 @@
-PREFIX  = /usr/local
-PORT    = /dev/ttyUSB0
+# Makefile for building Arduino applications
+
+PREFIX := /usr/local
+PORT   := /dev/ttyUSB0
+
+# change this if you wish to have an another board as the default board
+BOARD  := atmega328
+
+VERSION := 101
+
+## the lines below will most likely not require any changes
 
 DEPS    := $(DEPS)
 
-MCU     = atmega328p
-F_CPU   = 16000000
-CORE    = arduino
-VARIANT = standard
-USB_VID =
-USB_PID =
+# might be unset in older board definitions
+VARIANT := standard
 
-VERSION = 100
+include $(PREFIX)/lib/arduino/boards/$(BOARD).inc
 
-PROGRAMMER  = arduino
-UPLOAD_RATE = 115200
+CC  := /usr/bin/avr-gcc
+CXX := /usr/bin/avr-g++
+LD  := /usr/bin/avr-gcc
 
-# the lines below will most likely not require any changes
-
-CC  = /usr/bin/avr-gcc
-CXX = /usr/bin/avr-g++
-LD  = /usr/bin/avr-gcc
-
-OBJCOPY = /usr/bin/avr-objcopy
-SIZE    = /usr/bin/avr-size
-AVRDUDE = /usr/bin/avrdude
+OBJCOPY := /usr/bin/avr-objcopy
+SIZE    := /usr/bin/avr-size
+AVRDUDE := /usr/bin/avrdude
 
 SRCS_INO = $(shell echo $(SRCS) | sed -e 's/\w*.pde//g')
 SRCS_PDE = $(shell echo $(SRCS) | sed -e 's/\w*.ino//g')
@@ -38,20 +38,21 @@ LIBDIR = $(PREFIX)/lib/arduino/$(MCU)/$(MHZ)/$(VARIANT)
 DEP_H   = $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
 DEP_LIB = $(foreach var,$(DEPS),-l$(var))
 
-CFLAGS   = -c -g -Os -w -ffunction-sections -fdata-sections \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)     \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
-    -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
-CXXFLAGS = -c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)     \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
-    -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
+DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
+ifdef VID
+  DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
+CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 
 LDFLAGS  = -Os -Wl,--gc-sections -mmcu=$(MCU)
 
 AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
-AVRDUDE_FLAGS = -V -F -C /etc/avrdude.conf -p $(MCU) -P $(PORT) -c $(PROGRAMMER) \
-    -b $(UPLOAD_RATE)
+AVRDUDE_FLAGS = -V -F -C /etc/avrdude.conf -p $(MCU) -P $(PORT) -c $(PROTOCOL) \
+    -b $(SPEED)
 
 Q = @
 

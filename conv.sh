@@ -1,7 +1,11 @@
 #! /bin/sh
 
-# Converts an Arduino 'board.txt' file into a set of files of variable
-# definitions, one for each board, suitable for Makefile inclusion.
+# Converts an Arduino 'board.txt' file into a set of configuration files, one
+# file for each board.
+#
+# The generated files are created in the './boards' directory.
+
+DIR="./boards"
 
 if [ $# != 1 ]
 then
@@ -10,7 +14,6 @@ then
 fi
 
 FILE=$1
-DIR=boards
 
 # holds current board type
 board=

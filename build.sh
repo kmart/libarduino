@@ -1,204 +1,65 @@
 #! /bin/sh
 
-#  Configurations:
+# Builds Arduino core and standard libraries for each board configuration
+# located in the '/boards' directory.
 #
-# see 'boards.txt' in Arduino dist for combinations
-# MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard                       - lilypad328, pro328
-# MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard                       - uno, atmega328, ethernet, pro5v328
-# MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs              - fio
-# MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs              - nano328, mini328, bt328
-# MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard                       - lilypad, pro
-# MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard                       - diecimila, pro5v, atmega168
-# MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs              - mini, nano, bt
-# MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega                           - mega2560
-# MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega                           - mega
-# MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo VID=0x2341 PID=0x8036 - leonardo
-# MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard                       - atmega8
-#
-# additional boards
-# MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard                       - sanguino
+# NB! Generate the boards files first, using the 'conv.sh' script.
 
-# core
-make -f core.mk clean install MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f core.mk clean install MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f core.mk clean install MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f core.mk clean install MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f core.mk clean install MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f core.mk clean install MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f core.mk clean install MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f core.mk clean install MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f core.mk clean install MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f core.mk clean install MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo USB_VID=0x2341 USB_PID=0x8036
-make -f core.mk clean install MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f core.mk clean install MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
+DIR="./boards"
 
-make -f core.mk clean
+install_core () {
+    for i in $*
+    do
+        make -f core.mk clean install BOARD="$i"
+    done
+    make -f core.mk clean
+}
 
-# install backward compability header file
-make -f core.mk install_wp
+exclude_board () {
+    BOARD=$1; shift
+    for j in $*
+    do
+        test $j = $BOARD && return 1
+    done
+    return 0
+}
+
+install_library () {
+    NAME=$1; shift
+    DEPS=$1; shift
+    EXCL=$1; shift
+    for i in $*
+    do
+        exclude_board $i $EXCL
+        if [ $? -eq 0 ]
+        then
+            make -f library.mk clean install NAME="$NAME" DEPS="$DEPS" BOARD="$i"
+        fi
+    done
+    make -f library.mk clean NAME="$NAME" DEPS="$DEPS"
+}
+
+# get list of boards
+BOARDS=$(echo $DIR/*.inc | sed -e "s#$DIR/*##g" -e 's/\.inc//g')
+
+# install core
+install_core $BOARDS
+
+## install libraries
+#               library        deps  boards to exclude
+install_library EEPROM         ""    ""                        $BOARDS
+install_library SPI            ""    ""                        $BOARDS;
+install_library Ethernet       "SPI" ""                        $BOARDS;
+install_library Firmata        ""    "atmega12848m atmega1284" $BOARDS;
+install_library LiquidCrystal  ""    ""                        $BOARDS;
+install_library SD             ""    ""                        $BOARDS;
+install_library Servo          ""    ""                        $BOARDS;
+install_library SoftwareSerial ""    "atmega8"                 $BOARDS;
+install_library Stepper        ""    ""                        $BOARDS;
+install_library Wire           ""    ""                        $BOARDS;
 
 # install build makefile
 make -f core.mk install_mk
 
-## libraries
-
-# EEPROM
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=EEPROM DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=EEPROM DEPS=
-
-# SPI
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SPI DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=SPI DEPS=
-
-# Ethernet
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Ethernet DEPS=SPI MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=Ethernet DEPS=SPI
-
-# Firmata
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Firmata DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=Firmata DEPS=
-
-# LiquidCrystal
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=LiquidCrystal DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=LiquidCrystal DEPS=
-
-# SD
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SD DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=SD DEPS=
-
-# Servo
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Servo DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=Servo DEPS=
-
-# SoftwareSerial
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-# these gives errors
-#make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=SoftwareSerial DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=SoftwareSerial DEPS=
-
-# Stepper
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Stepper DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=Stepper DEPS=
-
-# Wire
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega328p F_CPU=8000000L  CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega328p F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega168  F_CPU=8000000L  CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega168  F_CPU=16000000L CORE=arduino VARIANT=eightanaloginputs
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega2560 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega1280 F_CPU=16000000L CORE=arduino VARIANT=mega
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega32u4 F_CPU=16000000L CORE=arduino VARIANT=leonardo
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega8    F_CPU=16000000L CORE=arduino VARIANT=standard
-make -f library.mk clean install NAME=Wire DEPS= MCU=atmega644p F_CPU=16000000L CORE=arduino VARIANT=standard
-
-make -f library.mk clean NAME=Wire DEPS=
+# install backward compability header file
+make -f core.mk install_wp

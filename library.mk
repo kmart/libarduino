@@ -1,28 +1,29 @@
 # makefile for Arduino standard libraries
 
-PREFIX  = /usr/local
+PREFIX := /usr/local
 
-NAME    = SPI
-DEPS    =
+ROOT := ./arduino-1.0.1
+SRC  := $(ROOT)/libraries/$(NAME)
 
-ROOT    = ./arduino-1.0.1
-SRC     = $(ROOT)/libraries/$(NAME)
+# change this if you wish to have an another board as the default board
+BOARD := atmega328
 
-MCU     = atmega328p
-F_CPU   = 16000000L
-CORE    = arduino
-VARIANT = standard
-USB_VID =
-USB_PID =
+NAME := SPI
+DEPS :=
 
-VERSION = 100
+VERSION := 101
 
-# the lines below will most likely not require any changes
+## the lines below will most likely not require any changes
 
-CC  = /usr/bin/avr-gcc
-CXX = /usr/bin/avr-g++
-AR  = /usr/bin/avr-ar
-CP  = /usr/bin/install
+# might be unset in older board definitions
+VARIANT := standard
+
+include $(PREFIX)/lib/arduino/boards/$(BOARD).inc
+
+CC  := /usr/bin/avr-gcc
+CXX := /usr/bin/avr-g++
+AR  := /usr/bin/avr-ar
+CP  := /usr/bin/install
 
 MHZ = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
@@ -39,16 +40,17 @@ DEP_LIB = $(foreach var,$(DEPS),-l$(var))
 OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(NAME).a
 
-CFLAGS   = -g -Os -w -ffunction-sections -fdata-sections \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)  \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
-    -I$(SRC) -I$(SRC)/utility -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) \
-    $(DEP_H)
-CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections  \
-    -mmcu=$(MCU) -DF_CPU=$(F_CPU)L -DARDUINO=$(VERSION)  \
-    -DUSB_VID=$(USB_VID) -DUSB_PID=$(USB_PID) \
-    -I$(SRC) -I$(SRC)/utility -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) \
-    $(DEP_H)
+DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
+ifdef VID
+  DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(SRC) -I$(SRC)/utility -I$(INCDIR) \
+    -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
+CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections \
+    $(DEFS) -I$(SRC) -I$(SRC)/utility -I$(INCDIR) \
+    -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 
 # line feed (note! two blank lines)
 define LF
