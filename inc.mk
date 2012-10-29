@@ -25,10 +25,7 @@ OBJCOPY := /usr/bin/avr-objcopy
 SIZE    := /usr/bin/avr-size
 AVRDUDE := /usr/bin/avrdude
 
-SRCS_INO = $(shell echo $(SRCS) | sed -e 's/\w*.pde//g')
-SRCS_PDE = $(shell echo $(SRCS) | sed -e 's/\w*.ino//g')
-
-OBJS = $(SRCS_INO:.ino=.o) $(SRCS_PDE:.pde=.o)
+OBJS = $(shell echo $(SRCS) | sed -E 's/(\w+).[a-z]+/\1.o/g')
 
 MHZ  = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
@@ -44,9 +41,9 @@ ifdef VID
 endif
 
 CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
-    $(DEFS) -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
+    $(DEFS) -I. -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 CXXFLAGS = -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections \
-    $(DEFS) -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
+    $(DEFS) -I. -I$(INCDIR) -I$(INCDIR)/variants/$(VARIANT) $(DEP_H)
 
 LDFLAGS  = -Os -Wl,--gc-sections -mmcu=$(MCU)
 
@@ -71,11 +68,19 @@ clean:
 
 .ino.o:
 	@echo "CC -c $<"
-	$(Q)$(CXX) $(CXXFLAGS) -x c++ -c $< -o $@
+	$(Q)$(CXX) $(CXXFLAGS) -x c++ -c -o $@ $<
 
 .pde.o:
 	@echo "CC -c $<"
-	$(Q)$(CXX) $(CXXFLAGS) -x c++ -c $< -o $@
+	$(Q)$(CXX) $(CXXFLAGS) -x c++ -c -o $@ $<
+
+.cpp.o:
+	@echo "CC -c $<"
+	$(Q)$(CXX) $(CXXFLAGS) -x c++ -c -o $@ $<
+
+.c.o:
+	@echo "CC -c $<"
+	$(Q)$(CC) $(CFLAGS) -c -o $@ $<
 
 .elf.hex:
 	@echo "OBJCOPY $< $@"
