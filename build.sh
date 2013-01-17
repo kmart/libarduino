@@ -5,6 +5,12 @@
 #
 # NB! Generate the boards files first, using the 'conv.sh' script.
 
+# defaults for Arduino ver. 1.0.3
+export PREFIX=/usr/local
+export ROOT=./arduino-1.0.3
+export VERSION=103
+
+# directory containing the 'board' definition files
 DIR="./boards"
 
 install_core () {
@@ -48,15 +54,15 @@ install_core $BOARDS
 ## install libraries
 #               library        deps  boards to exclude
 install_library EEPROM         ""    ""                        $BOARDS
-install_library SPI            ""    ""                        $BOARDS;
-install_library Ethernet       "SPI" ""                        $BOARDS;
-install_library Firmata        ""    "atmega12848m atmega1284" $BOARDS;
-install_library LiquidCrystal  ""    ""                        $BOARDS;
-install_library SD             ""    ""                        $BOARDS;
-install_library Servo          ""    ""                        $BOARDS;
-install_library SoftwareSerial ""    "atmega8"                 $BOARDS;
-install_library Stepper        ""    ""                        $BOARDS;
-install_library Wire           ""    ""                        $BOARDS;
+install_library SPI            ""    ""                        $BOARDS
+install_library Ethernet       "SPI" ""                        $BOARDS
+install_library Firmata        ""    "atmega12848m atmega1284" $BOARDS
+install_library LiquidCrystal  ""    ""                        $BOARDS
+install_library SD             ""    ""                        $BOARDS
+install_library Servo          ""    ""                        $BOARDS
+install_library SoftwareSerial ""    "atmega8"                 $BOARDS
+install_library Stepper        ""    ""                        $BOARDS
+install_library Wire           ""    ""                        $BOARDS
 
 # install build makefile
 make -f core.mk install_mk

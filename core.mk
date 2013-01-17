@@ -1,35 +1,42 @@
 # makefile for Arduino core
 
-PREFIX := /usr/local
-
-ROOT   := ./arduino-1.0.1
-SRC    := $(ROOT)/hardware/arduino
+ifndef PREFIX
+  PREFIX := /usr/local
+endif
+ifndef ROOT
+  ROOT := ./arduino-1.0.3
+endif
+ifndef VERSION
+  VERSION := 103
+endif
 
 # change this if you wish to have an another board as the default board
-BOARD   := atmega328
-
-VERSION := 101
+BOARD := atmega328
 
 ## the lines below will most likely not require any changes
 
-# might be unset in older board definitions
+SRC := $(ROOT)/hardware/arduino
 VARIANT := standard
 
 include ./boards/$(BOARD).inc
+
+MHZ := $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
 CC  := /usr/bin/avr-gcc
 CXX := /usr/bin/avr-g++
 AR  := /usr/bin/avr-ar
 CP  := /usr/bin/install
+SED := /bin/sed
 
-MHZ = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
+GCC_VERSION := $(shell $(CC) -dumpversion | cut -f1,2 -d. | tr -d '.')
+GCC_VERSION_GE_47 := $(shell expr $(GCC_VERSION) \>= 47)
 
 INCDIR = $(PREFIX)/include/arduino
 LIBDIR = $(PREFIX)/lib/arduino/$(MCU)/$(MHZ)/$(VARIANT)
 
-SRC_H   = $(wildcard $(SRC)/cores/$(CORE)/*.h)  
-SRC_C   = $(wildcard $(SRC)/cores/$(CORE)/*.c)  
-SRC_CPP = $(wildcard $(SRC)/cores/$(CORE)/*.cpp)
+SRC_H   := $(wildcard $(SRC)/cores/$(CORE)/*.h)
+SRC_C   := $(wildcard $(SRC)/cores/$(CORE)/*.c)
+SRC_CPP := $(wildcard $(SRC)/cores/$(CORE)/*.cpp)
 
 OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(CORE).a
@@ -37,6 +44,11 @@ LIB  = lib$(CORE).a
 DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU)
 ifdef VID
   DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+# enable backward compability flag with newer compilers
+ifeq ($(GCC_VERSION_GE_47), 1)
+  DEFS += -D__AVR_LIBC_DEPRECATED_ENABLE__
 endif
 
 CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
@@ -61,6 +73,7 @@ install_wp: WProgram.h
 
 install_mk: inc.mk
 	$(CP) -D -C -m 644 $? $(PREFIX)/lib/arduino/$?
+	$(SED) -i "1iPREFIX=$(PREFIX)\nVERSION=$(VERSION)\n" $(PREFIX)/lib/arduino/$?
 
 clean:
 	$(RM) $(OBJS)

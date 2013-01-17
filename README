@@ -4,21 +4,62 @@ Arduino the Unix way
 Compiles and installs the Arduino source files and standard libraries as Unix
 library archive files, together with header files.
 
-In addition the rules for building an Arduino application has been offloaded
-into an external makefile (inc.mk). The "Makefile" needed for an Arduino project
-can thus be reduced to a few lines. An example:
+USAGE
+-----
+
+The rules for building an Arduino application has been offloaded into an
+external makefile (inc.mk). The "Makefile" needed for an Arduino project is then
+reduced to a few lines. An example:
 
     TARGET = blink
-    SRCS   = blink.ino
+    SRCS = blink.ino
 
     include /usr/local/lib/arduino/inc.mk
 
-If the project requires additional libraries these can be added to the build
-using the DEPS variable, e.g. with adding the line:
+If the project requires additional libraries, these can be added to the build
+using the DEPS variable, e.g. by adding the line:
 
-    DEPS   = SPI Ethernet
+    DEPS = SPI Ethernet
 
-(in the above case the "SPI" and "Ethernet" libraries are added to the build).
+to the Makefile (in the above case the "SPI" and "Ethernet" libraries are added
+to the build).
+
+To compile just run the "make" command like this:
+
+   $ make
+
+If the build should be done for a board different from the default one
+(atmega328), either add the BOARD variable to the Makefile, like this:
+
+    BOARD = leonardo
+
+or include the BOARD variable as a parameter to the "make" command when
+building:
+
+   $ make BOARD=leonardo
+
+To upload the resulting application, run the command:
+
+   $ make upload
+
+(the actual upload will be done with "avrdude" command and the correct parametes
+will be given by the specified BOARD type).
+
+If the upload should be done to a different port than the default one
+(/dev/ttyUSB0), add the PORT variable to the Makefile or include the PORT
+variable as a parameter to the "make" command when building:
+
+   $ make PORT=/dev/ttyS0
+
+Currently the default values for the BOARD and PORT variables are:
+
+   BOARD = atmega328
+   PORT = /dev/ttyUSB0
+
+These can be changed during installation (see next section).
+
+INSTALLING
+----------
 
 Prerequisites:
 
@@ -30,9 +71,9 @@ Prerequisites:
 
 Build and install:
 
-    $ wget http://arduino.googlecode.com/files/arduino-1.0.1-linux.tgz
-    $ tar zxf arduino-1.0.1-linux.tgz
-    $ ./conv.sh ./arduino-1.0.1/hardware/arduino/boards.txt
+    $ wget http://arduino.googlecode.com/files/arduino-1.0.3-src.tar.gz
+    $ tar zxf arduino-1.0.3-src.tar.gz
+    $ ./conv.sh ./arduino-1.0.3/hardware/arduino/boards.txt
     $ ./build.sh
 
 Will install the Arduino "core", the "inc.mk" makefile, the converted 'board'
@@ -43,9 +84,9 @@ Configurations for additional boards can be added by running the "conv.sh"
 script with the "boards.txt" file for the additional boards as parameter. For
 example for the Sanguino board (http://sanguino.cc/):
 
-    $ wget http://sanguino.googlecode.com/files/Sanguino-0023r4.zip
-    $ unzip Sanguino-0023r4.zip
-    $ ./conv.sh Sanguino/boards.txt
+    $ wget https://sanguino.googlecode.com/files/Sanguino-0101r1.zip
+    $ unzip -q Sanguino-0101r1.zip
+    $ ./conv.sh sanguino/boards.txt
 
 (Remember to run the "build.sh" script to actually compile libraries for the
 added boards.)
@@ -64,20 +105,38 @@ and similar) board, which has the following parameters set:
     CORE = arduino
     VARIANT = standard
 
-If the build should be for a different board, for example for the "Leonardo" board, add
-the "BOARD=leonardo" as parameter to the "make" command. Example:
+For an overveiw of the board configurations installed, look in the
+"/usr/local/lib/arduino/boards" directory. It contains one configuration file
+for each board.
 
-    $ make BOARD=leonardo
+The default board can be set by updating the line
 
-Similarily builds can be done for other boards. For an overview over boards
-supported, look in the "/usr/local/lib/arduino/boards" directory. It contains
-one configuration file for each board supported.
+    BOARD := atmega328
 
-Default board can be set by updating the line
+near the top of the the "/usr/local/lib/arduino/inc.mk" file. Similarily the
+default PORT (for uploads) can be changed by updating the PORT variable in the
+same file.
 
-    BOARD  := atmega328
+ADDITIONAL LIBRARIES
+--------------------
 
-at the top of the the "/usr/local/lib/arduino/inc.mk" file.
+Extra libraries can be installed using the "library.mk" file in combination with
+a build script. As an example the "build-addons.sh" script has been
+included. This script is specifically for installing the following libraries:
+
+    Adafruit-Thermal-Printer-Library
+    https://github.com/adafruit/Adafruit-Thermal-Printer-Library.git
+
+    LedControl
+    http://playground.arduino.cc/Main/LedControl
+
+    TM1638 library
+    http://code.google.com/p/tm1638-library/
+
+    USB_Host_Shield_2.0
+    https://github.com/felis/USB_Host_Shield_2.0.git
+
+The script will need to be adapted for other libraries.
 
 
-2012-07-05  <kmyksvo(at)online.no>
+2013-01-19  <kmyksvo(at)online.no>
