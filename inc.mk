@@ -1,43 +1,55 @@
 # Makefile for building Arduino applications
 
-PREFIX := /usr/local
-PORT   := /dev/ttyUSB0
+ifndef PREFIX
+  PREFIX := /usr/local
+endif
+ifndef PORT
+  PORT := /dev/ttyUSB0
+endif
+ifndef VERSION
+  VERSION := 103
+endif
 
 # change this if you wish to have an another board as the default board
-BOARD  := atmega328
-
-VERSION := 101
+BOARD := atmega328
 
 ## the lines below will most likely not require any changes
 
-DEPS    := $(DEPS)
+DEPS := $(DEPS)
 
-# might be unset in older board definitions
 VARIANT := standard
 
 include $(PREFIX)/lib/arduino/boards/$(BOARD).inc
+
+MHZ  := $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
 CC  := /usr/bin/avr-gcc
 CXX := /usr/bin/avr-g++
 LD  := /usr/bin/avr-gcc
 
+GCC_VERSION := $(shell $(CC) -dumpversion | cut -f1,2 -d. | tr -d '.')
+GCC_VERSION_GE_47 := $(shell expr $(GCC_VERSION) \>= 47)
+
 OBJCOPY := /usr/bin/avr-objcopy
 SIZE    := /usr/bin/avr-size
 AVRDUDE := /usr/bin/avrdude
 
-OBJS = $(shell echo $(SRCS) | sed -E 's/(\w+).[a-z]+/\1.o/g')
-
-MHZ  = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
+OBJS := $(shell echo $(SRCS) | sed -E 's/(\w+).[a-z]+/\1.o/g')
 
 INCDIR = $(PREFIX)/include/arduino
 LIBDIR = $(PREFIX)/lib/arduino/$(MCU)/$(MHZ)/$(VARIANT)
 
-DEP_H   = $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
-DEP_LIB = $(foreach var,$(DEPS),-l$(var))
+DEP_H   := $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
+DEP_LIB := $(foreach var,$(DEPS),-l$(var))
 
 DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
 ifdef VID
   DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+# enable backward compability flag with newer compilers
+ifeq ($(GCC_VERSION_GE_47), 1)
+  DEFS += -D__AVR_LIBC_DEPRECATED_ENABLE__
 endif
 
 CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \

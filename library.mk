@@ -1,41 +1,51 @@
 # makefile for Arduino standard libraries
 
-PREFIX := /usr/local
+ifndef PREFIX
+  PREFIX := /usr/local
+endif
+ifndef ROOT
+  ROOT := ./arduino-1.0.3
+endif
+ifndef VERSION
+  VERSION := 103
+endif
 
-ROOT := ./arduino-1.0.1
-SRC  := $(ROOT)/libraries/$(NAME)
+# directory containing the library source
+ifndef SRC
+  SRC := $(ROOT)/libraries/$(NAME)
+endif
 
 # change this if you wish to have an another board as the default board
 BOARD := atmega328
 
-NAME := SPI
-DEPS :=
-
-VERSION := 101
-
 ## the lines below will most likely not require any changes
 
-# might be unset in older board definitions
+NAME :=
+DEPS :=
+
 VARIANT := standard
 
 include $(PREFIX)/lib/arduino/boards/$(BOARD).inc
+
+MHZ := $(shell echo $(F_CPU) | sed -e 's/000000.*//')
 
 CC  := /usr/bin/avr-gcc
 CXX := /usr/bin/avr-g++
 AR  := /usr/bin/avr-ar
 CP  := /usr/bin/install
 
-MHZ = $(shell echo $(F_CPU) | sed -e 's/000000.*//')
+GCC_VERSION := $(shell $(CC) -dumpversion | cut -f1,2 -d. | tr -d '.')
+GCC_VERSION_GE_47 := $(shell expr $(GCC_VERSION) \>= 47)
 
 INCDIR = $(PREFIX)/include/arduino
 LIBDIR = $(PREFIX)/lib/arduino/$(MCU)/$(MHZ)/$(VARIANT)
 
-SRC_H   = $(wildcard $(SRC)/*.h $(SRC)/utility/*.h)
-SRC_C   = $(wildcard $(SRC)/*.c $(SRC)/utility/*.c)
-SRC_CPP = $(wildcard $(SRC)/*.cpp $(SRC)/utility/*.cpp)
+SRC_H   := $(wildcard $(SRC)/*.h $(SRC)/utility/*.h)
+SRC_C   := $(wildcard $(SRC)/*.c $(SRC)/utility/*.c)
+SRC_CPP := $(wildcard $(SRC)/*.cpp $(SRC)/utility/*.cpp)
 
-DEP_H   = $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
-DEP_LIB = $(foreach var,$(DEPS),-l$(var))
+DEP_H   := $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
+DEP_LIB := $(foreach var,$(DEPS),-l$(var))
 
 OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(NAME).a
@@ -43,6 +53,11 @@ LIB  = lib$(NAME).a
 DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
 ifdef VID
   DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
+endif
+
+# enable backward compability flag with newer compilers
+ifeq ($(GCC_VERSION_GE_47), 1)
+  DEFS += -D__AVR_LIBC_DEPRECATED_ENABLE__
 endif
 
 CFLAGS = -g -Os -w -ffunction-sections -fdata-sections \
