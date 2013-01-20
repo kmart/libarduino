@@ -11,7 +11,9 @@ ifndef VERSION
 endif
 
 # change this if you wish to have an another board as the default board
-BOARD := atmega328
+ifndef BOARD
+  BOARD := atmega328
+endif
 
 ## the lines below will most likely not require any changes
 
