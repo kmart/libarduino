@@ -101,3 +101,9 @@ clean:
 	$(Q)$(SIZE) --target=ihex $@
 
 .SUFFIXES: .ino .pde .elf .hex
+
+print_boards:
+	@for i in $(PREFIX)/lib/arduino/boards/*.inc; do b=$$(basename $$i .inc); n=$$(head -1 $$i | sed -e 's/^# //'); echo "$$b|$$n"; done | column -s '|' -t
+
+print_libraries print_libs:
+	@for i in $$(find $(PREFIX)/include/arduino/ -mindepth 1 -maxdepth 1 -type d | grep -v variants); do b=$$(basename $$i); echo $$b; done
