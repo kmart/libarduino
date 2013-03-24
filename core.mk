@@ -6,8 +6,8 @@ endif
 ifndef ROOT
   ROOT := ./arduino-1.0.3
 endif
-ifndef VERSION
-  VERSION := 103
+ifndef REVISION
+  REVISION := 103
 endif
 
 # change this if you wish to have an another board as the default board
@@ -70,12 +70,21 @@ install: $(LIB)
 	$(CP) -D -C -m 644 $(SRC)/variants/$(VARIANT)/pins_$(CORE).h $(INCDIR)/variants/$(VARIANT)/pins_$(CORE).h
 	$(CP) -D -C -m 644 ./boards/$(BOARD).inc $(PREFIX)/lib/arduino/boards/$(BOARD).inc
 
+install_library: library.mk
+	$(CP) -D -C -m 644 $? $(PREFIX)/lib/arduino/$?
+	$(SED) -i "1iPREFIX=$(PREFIX)\nREVISION=$(REVISION)\n" $(PREFIX)/lib/arduino/$?
+
+install_inc: inc.mk
+	$(CP) -D -C -m 644 $? $(PREFIX)/lib/arduino/$?
+	$(SED) -i "1iPREFIX=$(PREFIX)\nREVISION=$(REVISION)\n" $(PREFIX)/lib/arduino/$?
+
+install_script: init-functions
+	$(CP) -D -C -m 644 $? $(PREFIX)/lib/arduino
+
 install_wp: WProgram.h
 	$(CP) -D -C -m 644 $? $(PREFIX)/include/arduino
 
-install_mk: inc.mk
-	$(CP) -D -C -m 644 $? $(PREFIX)/lib/arduino/$?
-	$(SED) -i "1iPREFIX=$(PREFIX)\nVERSION=$(VERSION)\n" $(PREFIX)/lib/arduino/$?
+install_files: install_inc install_library install_script install_wp
 
 clean:
 	$(RM) $(OBJS)

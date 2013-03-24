@@ -6,8 +6,8 @@ endif
 ifndef ROOT
   ROOT := ./arduino-1.0.3
 endif
-ifndef VERSION
-  VERSION := 103
+ifndef REVISION
+  REVISION := 103
 endif
 
 # directory containing the library source
@@ -52,7 +52,7 @@ DEP_LIB := $(foreach var,$(DEPS),-l$(var))
 OBJS = $(SRC_C:.c=.o) $(SRC_CPP:.cpp=.o)
 LIB  = lib$(NAME).a
 
-DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
+DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(REVISION)
 ifdef VID
   DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
 endif

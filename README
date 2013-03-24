@@ -120,9 +120,8 @@ same file.
 ADDITIONAL LIBRARIES
 --------------------
 
-Extra libraries can be installed using the "library.mk" file in combination with
-a build script. As an example the "build-addons.sh" script has been
-included. This script is specifically for installing the following libraries:
+Extra libraries can be installed by using the "build-addons.sh".  By default the
+script installs the following libraries:
 
     Adafruit-Thermal-Printer-Library
     https://github.com/adafruit/Adafruit-Thermal-Printer-Library.git
@@ -139,4 +138,4 @@ included. This script is specifically for installing the following libraries:
 The script will need to be adapted for other libraries.
 
 
-2013-01-19  <kmyksvo(at)online.no>
+2013-03-24  <kmyksvo(at)online.no>
