@@ -1,0 +1,59 @@
+install_core () {
+    for i in $*
+    do
+        make -f core.mk clean install BOARD="$i"
+    done
+    make -f core.mk clean
+}
+
+test_board () {
+    BOARD=$1; shift
+    EXCL="yes"
+    RETVAL=1
+    [ -z "$1" ] && RETVAL=0
+    for j in $*
+    do
+        echo $j | grep '^!' > /dev/null 2>&1
+        if [ $? -eq 0 ]
+        then
+            EXCL="no"
+            RETVAL=0
+            j=$(echo $j | sed -e 's/^!//')
+        fi
+        [ "$EXCL" = "yes" -a $j = $BOARD ] && RETVAL=0
+        [ "$EXCL" = "no"  -a $j = $BOARD ] && RETVAL=1
+    done
+    return $RETVAL
+}
+
+install_library () {
+    NAME=$1; shift
+    DEPS=$1; shift
+    INCL=$1; shift
+    for i in $*
+    do
+        test_board $i $INCL
+        if [ $? -eq 0 ]
+        then
+            make -f library.mk install NAME="$NAME" DEPS="$DEPS" BOARD="$i"
+            make -f library.mk clean NAME="$NAME" DEPS="$DEPS" BOARD="$i"
+        fi
+    done
+}
+
+install_addon () {
+    NAME=$1; shift
+    DEPS=$1; shift
+    INCL=$1; shift
+    # directory containing library source
+    export SRC=$ROOT/$NAME
+    for i in $*
+    do
+        test_board $i $INCL
+        if [ $? -eq 0 ]
+        then
+            make -f $PREFIX/lib/arduino/library.mk install NAME="$NAME" DEPS="$DEPS" BOARD="$i"
+            make -f $PREFIX/lib/arduino/library.mk clean NAME="$NAME" DEPS="$DEPS" BOARD="$i"
+        fi
+    done
+}

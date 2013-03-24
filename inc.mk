@@ -6,8 +6,8 @@ endif
 ifndef PORT
   PORT := /dev/ttyUSB0
 endif
-ifndef VERSION
-  VERSION := 103
+ifndef REVISION
+  REVISION := 103
 endif
 
 # change this if you wish to have an another board as the default board
@@ -44,7 +44,7 @@ LIBDIR = $(PREFIX)/lib/arduino/$(MCU)/$(MHZ)/$(VARIANT)
 DEP_H   := $(foreach var,$(DEPS),-I$(INCDIR)/$(var))
 DEP_LIB := $(foreach var,$(DEPS),-l$(var))
 
-DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(VERSION)
+DEFS = -mmcu=$(MCU) -DF_CPU=$(F_CPU) -DARDUINO=$(REVISION)
 ifdef VID
   DEFS += -DUSB_VID=$(VID) -DUSB_PID=$(PID)
 endif
