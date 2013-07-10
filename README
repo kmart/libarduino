@@ -71,9 +71,9 @@ Prerequisites:
 
 Build and install:
 
-    $ wget http://arduino.googlecode.com/files/arduino-1.0.3-src.tar.gz
-    $ tar zxf arduino-1.0.3-src.tar.gz
-    $ ./conv.sh ./arduino-1.0.3/hardware/arduino/boards.txt
+    $ wget http://arduino.googlecode.com/files/arduino-1.0.5-src.tar.gz
+    $ tar zxf arduino-1.0.5-src.tar.gz
+    $ ./conv.sh ./arduino-1.0.5/hardware/arduino/boards.txt
     $ ./build.sh
 
 Will install the Arduino "core", the "inc.mk" makefile, the converted 'board'
@@ -123,19 +123,31 @@ ADDITIONAL LIBRARIES
 Extra libraries can be installed by using the "build-addons.sh".  By default the
 script installs the following libraries:
 
-    Adafruit-Thermal-Printer-Library
+    Adafruit-Thermal-Printer-Library:
     https://github.com/adafruit/Adafruit-Thermal-Printer-Library.git
 
-    LedControl
+    Adafruit fork of Peter Knight's Cryptosuite library for Arduino:
+    https://github.com/adafruit/Cryptosuite
+
+      As this library does not quite follows convention for how the directory
+      stcucture should be for Arduino libraries, create the following symbolic
+      link before building the library:
+
+      $ ln -s Cryptosuite/Sha .
+
+      The library will then be built as 'libSha.a'. When referencing the
+      library in the 'Makefile', use 'Sha', not 'Cryptosuite'.
+
+    LedControl:
     http://playground.arduino.cc/Main/LedControl
 
-    TM1638 library
+    TM1638 library:
     http://code.google.com/p/tm1638-library/
 
-    USB_Host_Shield_2.0
+    USB_Host_Shield_2.0:
     https://github.com/felis/USB_Host_Shield_2.0.git
 
 The script will need to be adapted for other libraries.
 
 
-2013-03-24  <kmyksvo(at)online.no>
+2013-07-10  <kmyksvo(at)online.no>

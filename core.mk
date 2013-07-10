@@ -4,7 +4,7 @@ ifndef PREFIX
   PREFIX := /usr/local
 endif
 ifndef ROOT
-  ROOT := ./arduino-1.0.3
+  ROOT := ./arduino-1.0.5
 endif
 ifndef REVISION
   REVISION := 103
@@ -67,7 +67,7 @@ install: $(LIB)
 	$(CP) -D -C -m 644 $? $(LIBDIR)/$?
 	$(CP) -d $(INCDIR)
 	$(CP) -D -C -m 644 $(SRC_H) $(INCDIR)
-	$(CP) -D -C -m 644 $(SRC)/variants/$(VARIANT)/pins_$(CORE).h $(INCDIR)/variants/$(VARIANT)/pins_$(CORE).h
+	$(CP) -D -C -m 644 $(SRC)/variants/$(VARIANT)/pins_arduino.h $(INCDIR)/variants/$(VARIANT)/pins_arduino.h
 	$(CP) -D -C -m 644 ./boards/$(BOARD).inc $(PREFIX)/lib/arduino/boards/$(BOARD).inc
 
 install_library: library.mk
