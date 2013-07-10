@@ -4,7 +4,7 @@ ifndef PREFIX
   PREFIX := /usr/local
 endif
 ifndef ROOT
-  ROOT := ./arduino-1.0.3
+  ROOT := ./arduino-1.0.5
 endif
 ifndef REVISION
   REVISION := 103
