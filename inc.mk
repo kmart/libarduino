@@ -7,7 +7,7 @@ ifndef PORT
   PORT := /dev/ttyUSB0
 endif
 ifndef REVISION
-  REVISION := 103
+  REVISION := $(shell cat $(PREFIX)/lib/arduino/REVISION)
 endif
 
 # change this if you wish to have an another board as the default board

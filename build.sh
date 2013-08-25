@@ -10,7 +10,7 @@ export PREFIX=/usr/local
 
 # defaults for Arduino ver. 1.0.5
 export ROOT=./arduino-1.0.5
-export REVISION=103
+export REVISION=`head -c 4 $ROOT/todo.txt | sed -e 's/^0*//'`
 
 . ./init-functions
 

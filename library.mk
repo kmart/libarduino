@@ -4,10 +4,10 @@ ifndef PREFIX
   PREFIX := /usr/local
 endif
 ifndef ROOT
-  ROOT := ./arduino-1.0.5
+  $(error ROOT is undefined)
 endif
 ifndef REVISION
-  REVISION := 103
+  REVISION := $(shell cat $(PREFIX)/lib/arduino/REVISION)
 endif
 
 # directory containing the library source
