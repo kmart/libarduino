@@ -4,10 +4,10 @@ ifndef PREFIX
   PREFIX := /usr/local
 endif
 ifndef ROOT
-  ROOT := ./arduino-1.0.5
+  $(error ROOT is undefined)
 endif
 ifndef REVISION
-  REVISION := 103
+  $(error REVISION is undefined)
 endif
 
 # change this if you wish to have an another board as the default board
@@ -84,7 +84,10 @@ install_script: init-functions
 install_wp: WProgram.h
 	$(CP) -D -C -m 644 $? $(PREFIX)/include/arduino
 
-install_files: install_inc install_library install_script install_wp
+install_revision_file:
+	@echo $(REVISION) > $(PREFIX)/lib/arduino/REVISION
+
+install_files: install_inc install_library install_script install_wp install_revision_file
 
 clean:
 	$(RM) $(OBJS)
