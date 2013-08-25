@@ -129,15 +129,6 @@ script installs the following libraries:
     Adafruit fork of Peter Knight's Cryptosuite library for Arduino:
     https://github.com/adafruit/Cryptosuite
 
-      As this library does not quite follows convention for how the directory
-      stcucture should be for Arduino libraries, create the following symbolic
-      link before building the library:
-
-      $ ln -s Cryptosuite/Sha .
-
-      The library will then be built as 'libSha.a'. When referencing the
-      library in the 'Makefile', use 'Sha', not 'Cryptosuite'.
-
     LedControl:
     http://playground.arduino.cc/Main/LedControl
 
@@ -150,4 +141,4 @@ script installs the following libraries:
 The script will need to be adapted for other libraries.
 
 
-2013-07-10  <kmyksvo(at)online.no>
+2013-08-25  <kmyksvo(at)online.no>
