@@ -20,4 +20,4 @@ install_addon LedControl              ""                ""                      
 install_addon TM1638                  ""                ""                                               $BOARDS
 install_addon USBHostShield           ""                "!atmega8 atmega12848m atmega1284 robotControl"  $BOARDS
 install_addon AdafruitThermalPrinter  "SoftwareSerial"  ""                                               $BOARDS
-install_addon Sha                     ""                ""                                               $BOARDS
+install_addon Cryptosuite             ""                ""                                               $BOARDS
